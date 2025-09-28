@@ -2,7 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Cloudflare Pages 部署配置
+  output: 'export',
   trailingSlash: true,
+  distDir: 'out',
 
   // 图片优化配置
   images: {

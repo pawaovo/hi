@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { API_ENDPOINTS } from '@/lib/constants'
+import { ApiClient } from '@/lib/api-client'
 
 interface AgeStatsItem {
   target_age: number
@@ -22,15 +22,16 @@ export function useAgeStats(): UseAgeStatsReturn {
     try {
       setLoading(true)
       setError(null)
-      
-      const response = await fetch(API_ENDPOINTS.AGES)
-      const result = await response.json()
-      
-      if (response.ok) {
-        setAgeStats(result.data || [])
-      } else {
-        setError(result.error || 'Failed to fetch data')
-      }
+
+      const ageCounts = await ApiClient.getAgeStats()
+
+      // 转换为组件期望的格式
+      const statsArray = Object.entries(ageCounts).map(([age, count]) => ({
+        target_age: parseInt(age),
+        post_count: count
+      }))
+
+      setAgeStats(statsArray)
     } catch (err) {
       setError('Network error')
       console.error('Error fetching age stats:', err)
