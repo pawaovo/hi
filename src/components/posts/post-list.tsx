@@ -7,6 +7,7 @@ import { Error } from '@/components/common/error'
 import { Button } from '@/components/ui/button'
 import { PostCardSkeleton } from '@/components/ui/skeleton'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { ApiClient } from '@/lib/api-client'
 import type { AgePost } from '@/types'
 import { ChevronDown } from 'lucide-react'
 
@@ -15,16 +16,7 @@ interface PostListProps {
   refreshTrigger?: number
 }
 
-interface PostsResponse {
-  data: AgePost[]
-  pagination: {
-    page: number
-    limit: number
-    total: number
-    hasMore: boolean
-  }
-  error?: string
-}
+
 
 export function PostList({ targetAge, refreshTrigger }: PostListProps) {
   const [posts, setPosts] = useState<AgePost[]>([])
@@ -46,26 +38,20 @@ export function PostList({ targetAge, refreshTrigger }: PostListProps) {
         setLoadingMore(true)
       }
 
-      const response = await fetch(
-        `/api/posts?target_age=${targetAge}&page=${page}&limit=20`
-      )
-      const result: PostsResponse = await response.json()
+      // 直接使用 ApiClient 而不是 API 路由
+      const result = await ApiClient.getPostsByAge(targetAge, page, 20)
 
-      if (response.ok) {
-        if (append) {
-          setPosts(prev => [...prev, ...result.data])
-        } else {
-          setPosts(result.data)
-        }
-
-        setPagination({
-          page: result.pagination.page,
-          hasMore: result.pagination.hasMore,
-          total: result.pagination.total
-        })
+      if (append) {
+        setPosts(prev => [...prev, ...result.posts])
       } else {
-        setError(result.error || '加载失败')
+        setPosts(result.posts)
       }
+
+      setPagination({
+        page: result.pagination.page,
+        hasMore: result.pagination.has_next,
+        total: result.pagination.total
+      })
     } catch (err) {
       console.error('Error fetching posts:', err)
       setError('网络错误，请重试')

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/
 import { useAuth } from '@/hooks/use-auth'
 import { SimpleAuthModal } from '@/components/auth/simple-auth-modal'
 import { generateAgeRange, CONTENT_LIMITS } from '@/lib/constants'
+import { ApiClient } from '@/lib/api-client'
 import { Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { ToastContainer } from '@/components/ui/toast'
@@ -50,23 +51,16 @@ export function PostForm({ targetAge, onPostCreated }: PostFormProps) {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          target_age: targetAge,
-          content: content.trim(),
-          author_age: parseInt(authorAge),
-          user_id: user?.id || null,
-          username: user?.username || null
-        }),
+      // 直接使用 ApiClient 而不是 API 路由
+      const result = await ApiClient.createPost({
+        target_age: targetAge,
+        content: content.trim(),
+        author_age: parseInt(authorAge),
+        user_id: user?.id || undefined,
+        username: user?.username || undefined
       })
 
-      const result = await response.json()
-
-      if (response.ok) {
+      if (result.success) {
         success('发布成功！', '您的智慧分享已成功发布')
         setContent('')
         setAuthorAge('')
