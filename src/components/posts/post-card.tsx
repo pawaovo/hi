@@ -44,7 +44,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     } catch (error) {
       console.error('Error checking like status:', error)
     }
-  }, [post.id, user?.id])
+  }, [])
 
   // 处理点赞/取消点赞
   const handleLike = async () => {
