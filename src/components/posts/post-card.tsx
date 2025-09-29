@@ -77,12 +77,10 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
       const result = await ApiClient.toggleLike(post.id, user?.id, ip)
 
       if (result.success) {
-        // 服务器响应成功，确保状态与服务器一致
+        // 服务器响应成功，使用服务器返回的准确数据
         setIsLiked(result.liked)
-        // 注意：ApiClient.toggleLike 没有返回 like_count，需要重新获取或计算
-        const newCount = result.liked ? likeCount + 1 : likeCount - 1
-        setLikeCount(newCount)
-        onUpdate?.(post.id, { like_count: newCount })
+        setLikeCount(result.likeCount)
+        onUpdate?.(post.id, { like_count: result.likeCount })
       } else {
         // 服务器响应失败，回滚到原始状态
         setIsLiked(wasLiked)
