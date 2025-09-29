@@ -5,6 +5,7 @@ import type { User } from '@/types'
 interface SignUpData {
   username: string
   password: string
+  age?: number  // 添加年龄字段
 }
 
 interface SignInData {
@@ -79,7 +80,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         }
       },
 
-      signUp: async ({ username, password }) => {
+      signUp: async ({ username, password, age = 25 }) => {
         set({ isLoading: true })
 
         try {
@@ -109,10 +110,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
               id: userId,
               username,
               password_hash: password, // 在实际应用中应该加密密码
+              age: age,  // 添加年龄字段
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
-              is_active: true,
-              is_verified: true
+              is_active: true
             })
             .select()
             .single()

@@ -16,13 +16,13 @@ export function StatsCards({
   statItems, 
   loading, 
   error, 
-  gridCols = 'grid-cols-2',
+  gridCols = 'grid-cols-3',
   showError = false 
 }: StatsCardsProps) {
   if (loading) {
     return (
       <div className={`grid ${gridCols} gap-4`}>
-        {Array.from({ length: 4 }).map((_, i) => (
+        {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-6 text-center">
               <LoadingSpinner size="sm" />

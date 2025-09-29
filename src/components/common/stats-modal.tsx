@@ -28,14 +28,35 @@ export function StatsModal({ open, onOpenChange }: StatsModalProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="py-6">
+        <div className="py-6 space-y-6">
           <StatsCards
             statItems={statItems}
             loading={loading}
             error={error}
-            gridCols="grid-cols-2"
+            gridCols="grid-cols-3"
             showError={true}
           />
+
+          {/* 活跃用户年龄段 */}
+          {stats && stats.active_user_groups.length > 0 && (
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4 text-center">
+                活跃用户
+              </h3>
+              <div className="flex justify-center space-x-8">
+                {stats.active_user_groups.map((group, index) => (
+                  <div key={group.ageRange} className="text-center">
+                    <div className="text-sm text-slate-600 mb-1">
+                      {group.ageRange}
+                    </div>
+                    <div className="text-xl font-bold text-slate-800">
+                      {group.userCount}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -120,37 +120,40 @@ export class ApiClient {
     }
   }
 
-  // 点赞/取消点赞
-  static async toggleLike(
+  // 私有方法：构建已登录用户点赞查询
+  private static buildUserLikeQuery(postId: string, userId: string) {
+    return supabase
+      .from('post_likes')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('user_id', userId)
+  }
+
+  // 点赞（只支持添加点赞，不支持取消）
+  static async addLike(
     postId: string,
     userId?: string,
     ipAddress?: string
-  ): Promise<{ success: boolean; liked: boolean; likeCount: number; error?: string }> {
+  ): Promise<{ success: boolean; likeCount: number; error?: string }> {
     try {
-      // 检查是否已点赞
-      let query = supabase
-        .from('post_likes')
-        .select('id')
-        .eq('post_id', postId)
-
+      // 已登录用户：检查是否已点赞并保存记录
       if (userId) {
-        query = query.eq('user_id', userId)
-      } else if (ipAddress) {
-        query = query.eq('ip_address', ipAddress)
-      }
+        const { data: existingLike, error: checkError } = await this.buildUserLikeQuery(postId, userId).single()
 
-      const { data: existingLike } = await query.single()
-      const isLiked = !!existingLike
+        if (checkError && checkError.code !== 'PGRST116') {
+          throw checkError
+        }
 
-      // 执行点赞/取消点赞操作
-      if (isLiked) {
-        const { error } = await supabase
-          .from('post_likes')
-          .delete()
-          .eq('id', existingLike.id)
-        if (error) throw error
-      } else {
-        const { error } = await supabase
+        if (existingLike) {
+          return {
+            success: false,
+            likeCount: 0,
+            error: '您已经点赞过这条消息了'
+          }
+        }
+
+        // 插入点赞记录（已登录用户）
+        const { error: insertError } = await supabase
           .from('post_likes')
           .insert([{
             post_id: postId,
@@ -158,20 +161,22 @@ export class ApiClient {
             ip_address: ipAddress,
             user_agent: navigator.userAgent
           }])
-        if (error) throw error
+
+        if (insertError) throw insertError
       }
 
-      // 更新帖子点赞数
-      const { data: currentPost } = await supabase
+      // 获取当前点赞数并手动更新（确保数据一致性）
+      const { data: currentPost, error: selectError } = await supabase
         .from('age_posts')
         .select('like_count')
         .eq('id', postId)
         .single()
 
-      const newLikeCount = isLiked
-        ? Math.max(0, (currentPost?.like_count || 0) - 1)
-        : (currentPost?.like_count || 0) + 1
+      if (selectError) throw selectError
 
+      const newLikeCount = (currentPost.like_count || 0) + 1
+
+      // 手动更新点赞计数
       const { data: updatedPost, error: updateError } = await supabase
         .from('age_posts')
         .update({
@@ -186,39 +191,30 @@ export class ApiClient {
 
       return {
         success: true,
-        liked: !isLiked,
         likeCount: updatedPost.like_count
       }
     } catch (error: unknown) {
-      console.error('Error toggling like:', error)
       return {
         success: false,
-        liked: false,
         likeCount: 0,
-        error: error instanceof Error ? error.message : '操作失败'
+        error: error instanceof Error ? error.message : '点赞失败'
       }
     }
   }
 
   // 检查点赞状态
   static async checkLikeStatus(
-    postId: string, 
-    userId?: string, 
-    ipAddress?: string
+    postId: string,
+    userId?: string
   ): Promise<boolean> {
+    // 未登录用户始终返回false（允许重复点赞）
+    if (!userId) {
+      return false
+    }
+
     try {
-      let query = supabase
-        .from('post_likes')
-        .select('id')
-        .eq('post_id', postId)
-
-      if (userId) {
-        query = query.eq('user_id', userId)
-      } else if (ipAddress) {
-        query = query.eq('ip_address', ipAddress)
-      }
-
-      const { data } = await query.single()
+      // 已登录用户检查数据库记录
+      const { data } = await this.buildUserLikeQuery(postId, userId).single()
       return !!data
     } catch {
       return false
@@ -230,25 +226,61 @@ export class ApiClient {
     total_posts: number
     total_users: number
     total_likes: number
+    active_user_groups: Array<{ ageRange: string; userCount: number }>
   }> {
     try {
-      const [postsResult, usersResult, likesResult] = await Promise.all([
+      const [postsResult, usersResult, likesResult, authorAgesResult] = await Promise.all([
         supabase.from('age_posts').select('id', { count: 'exact', head: true }),
         supabase.from('users').select('id', { count: 'exact', head: true }),
-        supabase.from('post_likes').select('id', { count: 'exact', head: true })
+        // 修复：获取所有帖子的like_count来计算总和
+        supabase.from('age_posts').select('like_count'),
+        // 获取所有发帖用户的年龄用于活跃用户统计
+        supabase.from('age_posts').select('author_age').not('author_age', 'is', null)
       ])
+
+      // 计算总点赞数（所有帖子的like_count总和）
+      const totalLikes = likesResult.data?.reduce((sum, post) => sum + (post.like_count || 0), 0) || 0
+
+      // 计算活跃用户年龄段分布
+      const ageGroups: Record<string, Set<number>> = {}
+
+      authorAgesResult.data?.forEach((post) => {
+        const age = post.author_age
+        if (age && age >= 7 && age <= 91) {
+          // 计算年龄段 (7-14, 14-21, 21-28, ...)
+          const groupStart = Math.floor((age - 7) / 7) * 7 + 7
+          const groupEnd = groupStart + 7
+          const ageRange = `${groupStart}-${groupEnd}`
+
+          if (!ageGroups[ageRange]) {
+            ageGroups[ageRange] = new Set()
+          }
+          ageGroups[ageRange].add(age)
+        }
+      })
+
+      // 转换为数组并按用户数排序，取前3名
+      const activeUserGroups = Object.entries(ageGroups)
+        .map(([ageRange, ages]) => ({
+          ageRange,
+          userCount: ages.size
+        }))
+        .sort((a, b) => b.userCount - a.userCount)
+        .slice(0, 3)
 
       return {
         total_posts: postsResult.count || 0,
         total_users: usersResult.count || 0,
-        total_likes: likesResult.count || 0
+        total_likes: totalLikes,
+        active_user_groups: activeUserGroups
       }
     } catch (error) {
       console.error('Error fetching site stats:', error)
       return {
         total_posts: 0,
         total_users: 0,
-        total_likes: 0
+        total_likes: 0,
+        active_user_groups: []
       }
     }
   }

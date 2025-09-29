@@ -8,7 +8,7 @@ export interface SiteStats {
   total_posts: number
   total_users: number
   total_likes: number
-  active_ages: number
+  active_user_groups: Array<{ ageRange: string; userCount: number }>
 }
 
 export interface StatItem {
@@ -30,10 +30,7 @@ export function useSiteStats(autoFetch = true) {
 
       // 直接使用 ApiClient 而不是 API 路由
       const result = await ApiClient.getSiteStats()
-      setStats({
-        ...result,
-        active_ages: 0 // 暂时设为0，后续可以实现
-      })
+      setStats(result)
     } catch (err) {
       console.error('Error fetching site stats:', err)
       setError('Network error')
@@ -51,7 +48,7 @@ export function useSiteStats(autoFetch = true) {
   // 生成统计项配置
   const getStatItems = (): StatItem[] => {
     if (!stats) return []
-    
+
     return [
       {
         icon: MessageSquare,
@@ -70,12 +67,6 @@ export function useSiteStats(autoFetch = true) {
         label: '点赞总数',
         value: stats.total_likes,
         color: 'text-red-600'
-      },
-      {
-        icon: TrendingUp,
-        label: '活跃年龄段',
-        value: stats.active_ages,
-        color: 'text-purple-600'
       }
     ]
   }
