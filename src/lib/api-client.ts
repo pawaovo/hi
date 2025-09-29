@@ -140,46 +140,17 @@ export class ApiClient {
       }
 
       const { data: existingLike } = await query.single()
+      const isLiked = !!existingLike
 
-      if (existingLike) {
-        // 取消点赞
-        const { error: deleteError } = await supabase
+      // 执行点赞/取消点赞操作
+      if (isLiked) {
+        const { error } = await supabase
           .from('post_likes')
           .delete()
           .eq('id', existingLike.id)
-
-        if (deleteError) throw deleteError
-
-        // 获取当前点赞数并减1
-        const { data: currentPost } = await supabase
-          .from('age_posts')
-          .select('like_count')
-          .eq('id', postId)
-          .single()
-
-        const newLikeCount = Math.max(0, (currentPost?.like_count || 0) - 1)
-
-        // 更新帖子的点赞数
-        const { data: updatedPost, error: updateError } = await supabase
-          .from('age_posts')
-          .update({
-            like_count: newLikeCount,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', postId)
-          .select('like_count')
-          .single()
-
-        if (updateError) throw updateError
-
-        return {
-          success: true,
-          liked: false,
-          likeCount: updatedPost.like_count
-        }
+        if (error) throw error
       } else {
-        // 添加点赞
-        const { error: insertError } = await supabase
+        const { error } = await supabase
           .from('post_likes')
           .insert([{
             post_id: postId,
@@ -187,36 +158,36 @@ export class ApiClient {
             ip_address: ipAddress,
             user_agent: navigator.userAgent
           }])
+        if (error) throw error
+      }
 
-        if (insertError) throw insertError
+      // 更新帖子点赞数
+      const { data: currentPost } = await supabase
+        .from('age_posts')
+        .select('like_count')
+        .eq('id', postId)
+        .single()
 
-        // 获取当前点赞数并加1
-        const { data: currentPost } = await supabase
-          .from('age_posts')
-          .select('like_count')
-          .eq('id', postId)
-          .single()
+      const newLikeCount = isLiked
+        ? Math.max(0, (currentPost?.like_count || 0) - 1)
+        : (currentPost?.like_count || 0) + 1
 
-        const newLikeCount = (currentPost?.like_count || 0) + 1
+      const { data: updatedPost, error: updateError } = await supabase
+        .from('age_posts')
+        .update({
+          like_count: newLikeCount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', postId)
+        .select('like_count')
+        .single()
 
-        // 更新帖子的点赞数
-        const { data: updatedPost, error: updateError } = await supabase
-          .from('age_posts')
-          .update({
-            like_count: newLikeCount,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', postId)
-          .select('like_count')
-          .single()
+      if (updateError) throw updateError
 
-        if (updateError) throw updateError
-
-        return {
-          success: true,
-          liked: true,
-          likeCount: updatedPost.like_count
-        }
+      return {
+        success: true,
+        liked: !isLiked,
+        likeCount: updatedPost.like_count
       }
     } catch (error: unknown) {
       console.error('Error toggling like:', error)

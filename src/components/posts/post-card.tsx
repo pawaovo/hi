@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
@@ -34,17 +34,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     }
   }
 
-  // 检查点赞状态
-  const checkLikeStatus = useCallback(async () => {
-    try {
-      // 直接使用 ApiClient 检查点赞状态
-      // 注意：这里需要实现一个检查点赞状态的方法
-      // 暂时跳过，因为这个功能在静态导出中比较复杂
-      // 可以考虑使用本地存储来记录点赞状态
-    } catch (error) {
-      console.error('Error checking like status:', error)
-    }
-  }, [])
+
 
   // 处理点赞/取消点赞
   const handleLike = async () => {
@@ -99,9 +89,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     }
   }
 
-  useEffect(() => {
-    checkLikeStatus()
-  }, [post.id, user?.id, checkLikeStatus])
+
 
   return (
     <Card id={`post-${post.id}`} className="hover:shadow-md transition-all duration-200">

@@ -27,13 +27,7 @@ export const CONTENT_LIMITS = {
   USERNAME_MAX_LENGTH: 50
 } as const
 
-// API相关常量
-export const API_ENDPOINTS = {
-  AGES: '/api/ages',
-  POSTS: '/api/posts',
-  AUTH: '/api/auth',
-  USERS: '/api/users'
-} as const
+// 注意：项目已迁移到直接使用Supabase客户端，不再使用API路由
 
 // 缓存相关常量
 export const CACHE_KEYS = {
