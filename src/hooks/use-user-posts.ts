@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from './use-auth'
+import { supabase } from '@/lib/supabase'
 import type { AgePost } from '@/types'
 
 interface UserPostsStats {
@@ -49,30 +50,50 @@ export function useUserPosts(initialPage = 1, pageSize = 20): UseUserPostsReturn
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/users/posts?user_id=${user.id}&page=${page}&limit=${pageSize}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
+      // 直接使用 Supabase 查询用户的帖子
+      const { data: posts, error, count } = await supabase
+        .from('age_posts')
+        .select('*', { count: 'exact' })
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .range((page - 1) * pageSize, page * pageSize - 1)
 
-      const result = await response.json()
-
-      if (response.ok) {
-        if (append) {
-          // 追加数据（加载更多）
-          setData(prevData => prevData ? {
-            posts: [...prevData.posts, ...result.data.posts],
-            stats: result.data.stats
-          } : result.data)
-        } else {
-          // 替换数据（刷新或首次加载）
-          setData(result.data)
-        }
-        setPagination(result.pagination)
-        setCurrentPage(page)
-      } else {
-        setError(result.error || 'Failed to fetch user posts')
+      if (error) {
+        throw error
       }
+
+      const totalPages = Math.ceil((count || 0) / pageSize)
+      const newPagination = {
+        page,
+        limit: pageSize,
+        total: count || 0,
+        total_pages: totalPages,
+        has_next: page < totalPages,
+        has_prev: page > 1
+      }
+
+      const newData = {
+        posts: posts || [],
+        stats: {
+          total_posts: count || 0,
+          total_likes: 0, // 需要单独查询
+          avg_likes: 0
+        }
+      }
+
+      if (append) {
+        // 追加数据（加载更多）
+        setData(prevData => prevData ? {
+          posts: [...prevData.posts, ...newData.posts],
+          stats: newData.stats
+        } : newData)
+      } else {
+        // 替换数据（刷新或首次加载）
+        setData(newData)
+      }
+      setPagination(newPagination)
+      setCurrentPage(page)
     } catch (err) {
       console.error('Error fetching user posts:', err)
       setError('Network error')

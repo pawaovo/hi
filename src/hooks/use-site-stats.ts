@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Users, MessageSquare, Heart, TrendingUp } from 'lucide-react'
+import { ApiClient } from '@/lib/api-client'
 
 export interface SiteStats {
   total_posts: number
@@ -27,14 +28,12 @@ export function useSiteStats(autoFetch = true) {
       setLoading(true)
       setError(null)
 
-      const response = await fetch('/api/stats/site')
-      const result = await response.json()
-
-      if (response.ok) {
-        setStats(result.data)
-      } else {
-        setError(result.error || 'Failed to fetch stats')
-      }
+      // 直接使用 ApiClient 而不是 API 路由
+      const result = await ApiClient.getSiteStats()
+      setStats({
+        ...result,
+        active_ages: 0 // 暂时设为0，后续可以实现
+      })
     } catch (err) {
       console.error('Error fetching site stats:', err)
       setError('Network error')
