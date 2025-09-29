@@ -10,6 +10,7 @@ import { zhCN } from 'date-fns/locale'
 import { Heart, MessageSquare, Calendar, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 
 interface Post {
   id: string
@@ -31,11 +32,24 @@ export default function ProfilePage() {
   const textSecondaryStyles = "text-sm text-slate-500"
 
   const fetchUserPosts = useCallback(async () => {
+    if (!user?.id) {
+      setIsLoadingPosts(false)
+      return
+    }
+
     try {
-      const response = await fetch(`/api/users/posts?user_id=${user?.id}`)
-      if (response.ok) {
-        const result = await response.json()
-        setPosts(result.data?.posts || [])
+      // 直接使用 Supabase 查询用户的帖子
+      const { data, error } = await supabase
+        .from('age_posts')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching user posts:', error)
+      } else {
+        setPosts(data || [])
       }
     } catch (error) {
       console.error('Error fetching user posts:', error)
