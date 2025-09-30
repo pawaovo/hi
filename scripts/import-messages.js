@@ -135,7 +135,6 @@ async function importMessages(ageGroups) {
         user_id: null,   // 匿名消息
         username: null,  // 匿名消息
         like_count: 0,
-        view_count: 0,
         is_active: true,
         is_featured: false
       };
