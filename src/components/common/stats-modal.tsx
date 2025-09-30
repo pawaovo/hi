@@ -44,7 +44,7 @@ export function StatsModal({ open, onOpenChange }: StatsModalProps) {
                 活跃用户
               </h3>
               <div className="flex justify-center space-x-8">
-                {stats.active_user_groups.map((group, index) => (
+                {stats.active_user_groups.map((group) => (
                   <div key={group.ageRange} className="text-center">
                     <div className="text-sm text-slate-600 mb-1">
                       {group.ageRange}

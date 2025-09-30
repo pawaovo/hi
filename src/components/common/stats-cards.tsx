@@ -8,16 +8,16 @@ interface StatsCardsProps {
   statItems: StatItem[]
   loading: boolean
   error: string | null
-  gridCols?: 'grid-cols-2' | 'grid-cols-2 md:grid-cols-4'
+  gridCols?: 'grid-cols-2' | 'grid-cols-3' | 'grid-cols-2 md:grid-cols-4'
   showError?: boolean
 }
 
-export function StatsCards({ 
-  statItems, 
-  loading, 
-  error, 
+export function StatsCards({
+  statItems,
+  loading,
+  error,
   gridCols = 'grid-cols-3',
-  showError = false 
+  showError = false
 }: StatsCardsProps) {
   if (loading) {
     return (

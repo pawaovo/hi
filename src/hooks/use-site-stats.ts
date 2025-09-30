@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, MessageSquare, Heart, TrendingUp } from 'lucide-react'
+import { Users, MessageSquare, Heart } from 'lucide-react'
 import { ApiClient } from '@/lib/api-client'
 
 export interface SiteStats {
