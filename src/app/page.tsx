@@ -8,26 +8,22 @@ export default function Home() {
         {/* 头部标题区域 */}
         <div className="text-center mb-16">
           <div className="max-w-3xl mx-auto">
-            <h1 className="text-5xl font-bold text-slate-800 mb-6 tracking-tight">
-              年龄智慧
+            <h1 className="text-4xl font-bold text-slate-600 mb-6 tracking-tight">
+              Hi
             </h1>
             <p className="text-xl text-slate-600 leading-relaxed">
-              分享给不同年龄的你的智慧与建议
+              按7年1辈子来算,一生大概有十来个辈子,你在人生进度条的哪个位置呢？<br />
+              也许很幸福,也可能遇到一些麻烦和问题。<br />
+              在这里你可以进入不同的时间线,听听回响或者留下痕迹。<br />
+              希望这些保留下来的文字,常有陪伴和力量。
             </p>
-            <div className="mt-8 w-24 h-1 bg-gradient-to-r from-slate-300 to-slate-400 mx-auto rounded-full"></div>
+            <div className="mt-8 w-72 h-1 bg-gradient-to-r from-slate-300 to-slate-400 mx-auto rounded-full"></div>
           </div>
         </div>
 
         <div className="max-w-5xl mx-auto">
           {/* 年龄选择区域 */}
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-semibold text-slate-800 mb-4">
-              选择一个年龄，开始探索
-            </h2>
-            <p className="text-slate-600 mb-10">
-              每个年龄都有独特的智慧和经验分享
-            </p>
-
+          <div className="mb-12">
             <AgeGrid showAll={true} />
           </div>
         </div>

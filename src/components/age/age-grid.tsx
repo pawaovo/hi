@@ -60,9 +60,10 @@ export const AgeGrid = memo(function AgeGrid({ showAll = false, maxItems = 6 }: 
     <div className="w-full">
       {/* 排序选择器和年龄卡片网格的容器 - 确保对齐 */}
       <div className={`${showAll ? 'max-w-4xl mx-auto' : 'max-w-2xl mx-auto'}`}>
-        {/* 排序选择器 - 与卡片网格右边缘对齐 */}
+        {/* 引导文字和排序选择器 - 左右对齐 */}
         {showAll && (
-          <div className="flex justify-end mb-6">
+          <div className="flex justify-between items-center mb-6">
+            <span className="text-slate-600 font-medium">点开年龄，进去看看</span>
             <Select value={sortType} onValueChange={(value: SortType) => setSortType(value)}>
               <SelectTrigger className="w-40">
                 <SelectValue />

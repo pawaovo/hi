@@ -61,7 +61,7 @@ export function PostForm({ targetAge, onPostCreated }: PostFormProps) {
       })
 
       if (result.success) {
-        success('发布成功！', '您的智慧分享已成功发布')
+        success('发出回响')
         setContent('')
         setAuthorAge('')
         onPostCreated?.()
@@ -87,7 +87,7 @@ export function PostForm({ targetAge, onPostCreated }: PostFormProps) {
           <CardDescription>
             {isAuthenticated
               ? `以 ${user?.username} 的身份发布，内容将关联到您的账户`
-              : '匿名发布，或者登录后以您的身份发布'
+              : '匿名发布，或者登录后发布（内容将关联到您的账户）'
             }
           </CardDescription>
         </CardHeader>
@@ -119,7 +119,7 @@ export function PostForm({ targetAge, onPostCreated }: PostFormProps) {
               />
               <div className="flex justify-between items-center mt-1">
                 <p className="text-xs text-muted-foreground">
-                  想对{targetAge}岁的自己或他人说点什么？
+                  对{targetAge}岁的自己或他人说点什么？
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {content.length}/{CONTENT_LIMITS.MAX_LENGTH}

@@ -20,7 +20,7 @@ export function StatsModal({ open, onOpenChange }: StatsModalProps) {
   }, [open, stats, fetchStats])
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold text-slate-800">
