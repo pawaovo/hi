@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "年龄智慧 - 分享给不同年龄的你的智慧与建议",
+  title: "Hi echo - 在这里可以留下痕迹，等待回响",
   description: "一个专注于年龄主题的智慧分享平台，为不同年龄段的人提供人生建议和经验分享。",
   keywords: "年龄智慧,人生建议,经验分享,智慧,成长",
 };
