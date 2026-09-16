@@ -4,15 +4,14 @@ const nextConfig: NextConfig = {
   // Cloudflare Pages 部署配置
   output: 'export',
   trailingSlash: true,
-  distDir: process.env.NEXT_BUILD_DIR || '.next-build',
+  // 注意：output: 'export' 模式下，distDir 同时是构建工作目录和静态导出目录，
+  // 部署流程依赖产物落在 out/，不要改成其他路径。
+  distDir: 'out',
 
   // 图片优化配置
   images: {
     unoptimized: true,
   },
-
-  // 静态导出输出目录（Cloudflare Pages 从这里取产物）
-  // 注意：不要把 distDir 指向 out，否则构建缓存清理会波及导出结果
 
   // 环境变量配置
   env: {
