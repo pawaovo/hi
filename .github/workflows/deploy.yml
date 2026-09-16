@@ -54,15 +54,15 @@ jobs:
             -H "Content-Type: application/json" \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects")"
           echo "$projects_json" | jq -r '.result[]? | "Pages project: \(.name) (\(.subdomain))"'
-          if ! echo "$projects_json" | jq -e '.result[]? | select(.name == "hi-5x3")' >/dev/null; then
-            echo "The configured Cloudflare account does not own Pages project hi-5x3"
+          if ! echo "$projects_json" | jq -e '.result[]? | select(.name == "hi")' >/dev/null; then
+            echo "The configured Cloudflare account does not own Pages project hi"
             exit 1
           fi
 
           domains_json="$(curl -fsS \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/hi-5x3/domains")"
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/hi/domains")"
 
           if echo "$domains_json" | jq -e '.result[]? | select(.name == "hiecho.xiaoweigezzz.xyz")' >/dev/null; then
             echo "Custom domain hiecho.xiaoweigezzz.xyz already exists"
@@ -74,12 +74,12 @@ jobs:
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
             --data '{"name":"hiecho.xiaoweigezzz.xyz"}' \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/hi-5x3/domains"
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/hi/domains"
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: hi-5x3
+          projectName: hi
           directory: out
