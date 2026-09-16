@@ -49,6 +49,16 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
+          projects_json="$(curl -fsS \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects")"
+          echo "$projects_json" | jq -r '.result[]? | "Pages project: \(.name) (\(.subdomain))"'
+          if ! echo "$projects_json" | jq -e '.result[]? | select(.name == "hi-5x3")' >/dev/null; then
+            echo "The configured Cloudflare account does not own Pages project hi-5x3"
+            exit 1
+          fi
+
           domains_json="$(curl -fsS \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
