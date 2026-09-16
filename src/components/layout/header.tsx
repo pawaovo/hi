@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { StatsModal } from '@/components/common/stats-modal'
@@ -19,6 +20,22 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between md:justify-center md:relative">
+        {/* 左侧导航区域 - 桌面端固定在左上角 */}
+        <div className="flex-shrink min-w-0 md:flex-shrink-0 md:absolute md:left-0 md:top-1/2 md:transform md:-translate-y-1/2">
+          <nav className="flex items-center space-x-3 min-w-0">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className={cn(buttonStyles, 'whitespace-nowrap max-w-[42vw] md:max-w-none')}
+            >
+              <Link href="/up" className="truncate">
+                人生七年系列：70-up更新中
+              </Link>
+            </Button>
+          </nav>
+        </div>
+
         {/* 品牌区域 - 移动端左对齐，桌面端居中 */}
         <div className="md:absolute md:left-1/2 md:top-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2">
           <Link href="/" className="flex items-center space-x-2 group">
