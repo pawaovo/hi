@@ -43,19 +43,19 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
       
-      - name: Ensure Cloudflare Pages project exists
+      - name: Ensure custom domain is attached to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          projects_json="$(curl -fsS \
+          domains_json="$(curl -fsS \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects")"
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/hi-5x3/domains")"
 
-          if echo "$projects_json" | jq -e '.result[] | select(.name == "age-wisdom-site")' >/dev/null; then
-            echo "Cloudflare Pages project age-wisdom-site already exists"
+          if echo "$domains_json" | jq -e '.result[]? | select(.name == "hiecho.xiaoweigezzz.xyz")' >/dev/null; then
+            echo "Custom domain hiecho.xiaoweigezzz.xyz already exists"
             exit 0
           fi
 
@@ -63,13 +63,13 @@ jobs:
             -X POST \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            --data '{"name":"age-wisdom-site","production_branch":"main"}' \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects"
+            --data '{"name":"hiecho.xiaoweigezzz.xyz"}' \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/hi-5x3/domains"
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: age-wisdom-site
+          projectName: hi-5x3
           directory: out
